@@ -1,6 +1,8 @@
 .env
 .tfvars
 .terraform
-.ssh
-.ssh.pub
-.tfstate
+*.ssh
+*.ssh.pub
+*.tfstate
+*.tfstate.backup
+*.asc
