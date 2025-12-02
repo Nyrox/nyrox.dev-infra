@@ -1,0 +1,34 @@
+networks:
+  forgejo:
+    external: false
+
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:13
+    container_name: forgejo
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - FORGEJO__server__PROTOCOL=https
+      - FORGEJO__server__DOMAIN=git.nyrox.dev
+      - FORGEJO__server__ENABLE_ACME=true
+      - FORGJEO__server__ACME_ACCEPTTOS=true
+      - FORGEJO__storage__STORAGE_TYPE=minio
+      - FORGEJO__storage__MINIO_BUCKET=git-nyrox-dev-forgejo
+      - FORGEJO__storage__MINIO_BUCKET_LOOKUP=auto
+      - FORGEJO__storage__MINIO_REGION=hel1
+      - FORGEJO__storage__MINIO_CHECKSUM_ALGORITHM=md5
+      - FORGEJO__storage__MINIO_ACCESS_KEY_ID=${MINIO_ACCESS_KEY}
+      - FORGEJO__storage__MINIO_SECRET_ACCESS_KEY=${MINIO_SECRET_ACCESS_KEY}
+      - FORGEJO__storage__MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - FORGEJO__storage__MINIO_USE_SSL=true
+    restart: always
+    networks:
+      - forgejo
+    volumes:
+      - /opt/forgejo-data/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - '443:3000'
+      - '222:22'

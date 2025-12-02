@@ -88,3 +88,31 @@ module "pangolin" {
 
   network_id = var.network_id
 }
+
+variable "forgejo_bucket_access_key" {
+    type = string
+    description = "minio-compatible forgejo bucket access key"
+    sensitive = false
+}
+
+variable "forgejo_bucket_secret_key" {
+    type = string
+    description = "minio-compatible forgejo bucket access key"
+    sensitive = true
+}
+
+variable "forgejo_bucket_endpoint" {
+    type = string
+    description = "minion-compatible s3 endpoint"
+}
+
+
+module "forgejo" {
+  source = "./forgejo"
+  depends_on = [  ]
+
+  network_id = var.network_id
+  forgejo_bucket_access_key = var.forgejo_bucket_access_key
+  forgejo_bucket_endpoint = var.forgejo_bucket_endpoint
+  forgejo_bucket_secret_key = var.forgejo_bucket_secret_key
+}
