@@ -14,6 +14,11 @@ variable "network_id" {
   description = "Hetzner Network ID to use"
 }
 
+variable "network_ip" {
+    type = string
+    description = "Networked IP"
+}
+
 resource "hcloud_volume" "pangolin-data" {
   name              = "pangolin-data"
   size              = 10
@@ -35,6 +40,7 @@ resource "hcloud_server" "pangolin-master" {
 
   network {
     network_id = var.network_id
+    ip = var.network_ip
   }
 
   user_data = file("${path.module}/pangolin-init.yaml")

@@ -5,15 +5,16 @@ users:
   - name: cluster
     ssh-authorized-keys:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCpBuzFghRM6bdzirdZzSH9cvC34Rl3Xv7m+kJbtJggyeAzHciXm9suL9ucWPU8zvjnE7mdRcPcN1ypvQute0n/Cmt1wCcOhJqM9nLMsxt0h6y5W4kpRMlSq45aNKg5xVz3EOUdZZoPt5u14BQzo21+ExzZgH3cELlIPvY/nYBBJoZV5tCn6VYs9jWniXb/q7S7cKUninKOZFfiv1j/D38+VsPj51D8WM9tFd5CTplBVUrBsiBwON5CQMvOkkfb7xUxgiDcrIGk5Xgg1VKO4pDqhh8N+E0q8MQJsi+dKd7YJSMKuMWy/AShZQRURVi5wcuVYd91bHHyzZHjRzP/b1CrxjoE94Il4s6yskfV/zN+3famBWld4wvaR/4ab2acWT9eE8DjOSZkYUsN2WaNrZCZDHrShXAewN96cdX3JDWAV2EI9fSrMA45S/13ofpDyR4No1Rzhlpf/I5UwfC8WVuDXXHKOBBwf5bM3cgT8EivU40miorfj8ZMsF/lMBcTm0s= marko@DESKTOP-Q8CO3NO
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCuumXfIEyIWnlfww3nJ72VmXg36eH2dCB7jBu4hcvH K8S Worker Node Key
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
 
 write_files:
   - path: /root/.ssh/id_ed25519
     content: |
-      -----BEGIN OPENSSH PRIVATE KEY-----
-      -----END OPENSSH PRIVATE KEY-----
-
+%{ for line in K3S_PRIVATE_KEY ~}
+      ${line}
+%{ endfor ~}
     permissions: "0600"
 
 runcmd:

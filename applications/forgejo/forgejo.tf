@@ -15,6 +15,12 @@ variable "network_id" {
   description = "Hetzner Network ID to use"
 }
 
+
+variable "network_ip" {
+    type = string
+    description = "Networked IP"
+}
+
 variable "forgejo_bucket_access_key" {
     type = string
     description = "minio-compatible forgejo bucket access key"
@@ -98,6 +104,7 @@ resource "hcloud_server" "forgejo-master" {
 
   network {
     network_id = var.network_id
+    ip = var.network_ip
   }
 
   user_data = data.cloudinit_config.forgejo-cloud-init.rendered
