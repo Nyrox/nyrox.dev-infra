@@ -282,16 +282,16 @@ resource "kubernetes_service_v1" "syncthing-service" {
 
     port {
       name        = "tcp"
-      port        = 32222
+      port        = 22000
       protocol    = "TCP"
-      target_port = 32222
+      target_port = 22000
     }
 
     port {
       name        = "udp"
-      port        = 32222
+      port        = 22000
       protocol    = "UDP"
-      target_port = 32222
+      target_port = 22000
     }
 
     selector = {
