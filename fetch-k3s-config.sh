@@ -1,0 +1,1 @@
+scp -i ~/.ssh/id_ed25519.k8s-dev cluster@ip:/etc/rancher/k3s/k3s.yaml ~/.kube/config
