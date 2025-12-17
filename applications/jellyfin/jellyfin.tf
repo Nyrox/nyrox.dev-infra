@@ -45,7 +45,7 @@ resource "kubernetes_persistent_volume_claim_v1" "jellyfin-media-volume" {
 
     resources {
       requests = {
-        storage = "10Gi"
+        storage = "40Gi"
       }
     }
   }
