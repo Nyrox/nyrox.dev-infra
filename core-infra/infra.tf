@@ -21,6 +21,16 @@ variable "hcloud_token" {
   type      = string
 }
 
+variable "tekton_dashboard_oauth_client_id" {
+    sensitive = true
+    type = string
+}
+
+variable "tekton_dashboard_oauth_client_secret" {
+    sensitive = true
+    type = string
+}
+
 /// -- PROVIDERS
 
 provider "hcloud" {
@@ -56,4 +66,7 @@ module "hetzner-k8s" {
 
   hcloud_token = var.hcloud_token
   network_id   = data.hcloud_network.by_name.id
+
+  tekton_dashboard_oauth_client_id = var.tekton_dashboard_oauth_client_id
+  tekton_dashboard_oauth_client_secret = var.tekton_dashboard_oauth_client_secret
 }

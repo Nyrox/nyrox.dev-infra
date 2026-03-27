@@ -8,30 +8,30 @@ terraform {
       version = "1.56.0"
     }
     kubernetes = {
-        source = "hashicorp/kubernetes",
+      source = "hashicorp/kubernetes",
     }
     helm = {
-        source = "hashicorp/helm"
+      source = "hashicorp/helm"
     }
   }
 }
 
 /// -- VARIABLES 
 variable "forgejo_bucket_access_key" {
-    type = string
-    description = "minio-compatible forgejo bucket access key"
-    sensitive = false
+  type        = string
+  description = "minio-compatible forgejo bucket access key"
+  sensitive   = false
 }
 
 variable "forgejo_bucket_secret_key" {
-    type = string
-    description = "minio-compatible forgejo bucket access key"
-    sensitive = true
+  type        = string
+  description = "minio-compatible forgejo bucket access key"
+  sensitive   = true
 }
 
 variable "forgejo_bucket_endpoint" {
-    type = string
-    description = "minion-compatible s3 endpoint"
+  type        = string
+  description = "minion-compatible s3 endpoint"
 }
 
 variable "hcloud_token" {
@@ -58,7 +58,7 @@ provider "helm" {
 /// -- DATA
 
 data "hcloud_network" "by_name" {
-    name = "kubernetes-cluster"
+  name = "kubernetes-cluster"
 }
 
 /// -- MODULES
@@ -66,7 +66,7 @@ data "hcloud_network" "by_name" {
 module "pangolin" {
   source = "./pangolin"
 
-  depends_on = [ ]
+  depends_on = []
 
   network_id = data.hcloud_network.by_name.id
   network_ip = "10.0.1.3"
@@ -75,19 +75,24 @@ module "pangolin" {
 
 
 module "forgejo" {
-  source = "./forgejo"
-  depends_on = [  ]
+  source     = "./forgejo"
+  depends_on = []
 
   network_id = data.hcloud_network.by_name.id
   network_ip = "10.0.1.4"
 
   forgejo_bucket_access_key = var.forgejo_bucket_access_key
-  forgejo_bucket_endpoint = var.forgejo_bucket_endpoint
+  forgejo_bucket_endpoint   = var.forgejo_bucket_endpoint
   forgejo_bucket_secret_key = var.forgejo_bucket_secret_key
 }
 
 
 module "jellyfin" {
-  source = "./jellyfin"
-  depends_on = [ ]
+  source     = "./jellyfin"
+  depends_on = []
+}
+
+module "buildkit" {
+  source     = "./buildkit"
+  depends_on = []
 }

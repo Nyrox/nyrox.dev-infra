@@ -7,6 +7,10 @@ terraform {
     helm = {
       source = "hashicorp/helm"
     }
+
+    kubectl = {
+      source = "gavinbunney/kubectl"
+    }
   }
 }
 
@@ -250,6 +254,29 @@ resource "kubernetes_manifest" "nginx-gabric-gateway" {
               kind = "Secret"
               name = "motoki-playground-nyrox-dev-secret"
             }]
+          }
+        },
+        {
+          name = "tekton-dashboard"
+          port = 443
+          protocol = "HTTPS"
+          hostname = "tekton.nyrox.dev"
+          tls = {
+            mode = "Terminate"
+            certificateRefs = [{
+              kind = "Secret"
+              name = "tekton-nyrox-dev-secret"
+            }]
+          }
+          allowedRoutes = {
+            namespaces = {
+              from = "Selector"
+              selector = {
+                matchLabels = {
+                  "kubernetes.io/metadata.name" = "tekton-aux"
+                }
+              }
+            }
           }
         }
       ]
