@@ -90,6 +90,11 @@ variable "newt_secret" {
   sensitive   = true
 }
 
+module "gateway" {
+  source     = "./gateway"
+  depends_on = []
+}
+
 module "pangolin" {
   source = "./pangolin"
 
