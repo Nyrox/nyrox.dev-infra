@@ -11,6 +11,7 @@ terraform {
   }
 }
 
+
 resource "kubernetes_namespace_v1" "buildkit" {
   metadata {
     name = "buildkit"
@@ -25,7 +26,7 @@ resource "kubernetes_manifest" "buildkit-selfsigned-clusterissuer" {
     apiVersion = "cert-manager.io/v1"
     kind       = "Issuer"
     metadata = {
-      name = "buildkit-selfsigned"
+      name      = "buildkit-selfsigned"
       namespace = "buildkit"
     }
     spec = {
@@ -39,7 +40,7 @@ resource "kubernetes_manifest" "buildkit-root-cert" {
     apiVersion = "cert-manager.io/v1"
     kind       = "Certificate"
     metadata = {
-      name = "buildkit-ca"
+      name      = "buildkit-ca"
       namespace = "buildkit"
     }
     spec = {
@@ -58,7 +59,7 @@ resource "kubernetes_manifest" "buildkit-ca-issuer" {
     apiVersion = "cert-manager.io/v1"
     kind       = "Issuer"
     metadata = {
-      name = "buildkit-ca-issuer"
+      name      = "buildkit-ca-issuer"
       namespace = "buildkit"
     }
     spec = {
@@ -74,7 +75,7 @@ resource "kubernetes_manifest" "buildkit-daemon-cert" {
     apiVersion = "cert-manager.io/v1"
     kind       = "Certificate"
     metadata = {
-      name = "buildkit-daemon"
+      name      = "buildkit-daemon"
       namespace = "buildkit"
     }
     spec = {
@@ -85,8 +86,9 @@ resource "kubernetes_manifest" "buildkit-daemon-cert" {
       commonName = "buildkitd"
       dnsNames = [
         "buildkitd",
-        "buildkitd.default.svc",
-        "buildkitd.default.svc.cluster.local"
+        "buildkitd.buildkit",
+        "buildkitd.buildkit.svc",
+        "buildkitd.buildkit.svc.cluster.local"
       ]
       usages = [
         "server auth",
@@ -95,6 +97,29 @@ resource "kubernetes_manifest" "buildkit-daemon-cert" {
     }
   }
 }
+
+
+resource "kubernetes_manifest" "buildkit-client-cert" {
+  manifest = {
+    apiVersion = "cert-manager.io/v1"
+    kind       = "Certificate"
+    metadata = {
+      name      = "buildkit-client"
+      namespace = "buildkit"
+    }
+    spec = {
+      secretName = "buildkit-client-certs"
+      issuerRef = {
+        name = "buildkit-ca-issuer"
+      }
+      commonName = "buildkitd-client"
+      usages = [
+        "client auth"
+      ]
+    }
+  }
+}
+
 
 resource "kubernetes_deployment_v1" "buildkit-deployment-arm64" {
   depends_on       = [kubernetes_namespace_v1.buildkit]
@@ -177,6 +202,7 @@ resource "kubernetes_deployment_v1" "buildkit-deployment-arm64" {
             read_only  = true
             mount_path = "/certs"
           }
+
         }
 
         volume {
@@ -186,6 +212,24 @@ resource "kubernetes_deployment_v1" "buildkit-deployment-arm64" {
           }
         }
       }
+    }
+  }
+}
+
+resource "kubernetes_service_v1" "buildkitd" {
+  metadata {
+    name      = "buildkitd"
+    namespace = "buildkit"
+  }
+
+  spec {
+    selector = {
+      app = "buildkitd"
+    }
+
+    port {
+      port        = 1234
+      target_port = 1234
     }
   }
 }

@@ -23,8 +23,45 @@ variable "network_id" {
   type = string
 }
 
+variable "forgejo_registry_username" {
+  type        = string
+  description = "Username for the Forgejo container registry at git.nyrox.dev"
+}
+
+variable "forgejo_registry_token" {
+  type        = string
+  description = "Forgejo access token for pulling from git.nyrox.dev container registry"
+  sensitive   = true
+}
 
 // --- RESOURCES
+
+resource "kubernetes_namespace_v1" "motoki-playground" {
+  metadata {
+    name = "motoki-playground"
+  }
+}
+
+resource "kubernetes_secret_v1" "forgejo-registry" {
+  depends_on = [kubernetes_namespace_v1.motoki-playground]
+
+  metadata {
+    name      = "forgejo-registry"
+    namespace = "motoki-playground"
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "git.nyrox.dev" = {
+          auth = base64encode("${var.forgejo_registry_username}:${var.forgejo_registry_token}")
+        }
+      }
+    })
+  }
+}
 resource "kubernetes_secret_v1" "hcloud" {
   metadata {
     name      = "hcloud"
@@ -228,7 +265,7 @@ resource "kubernetes_manifest" "nginx-gabric-gateway" {
             }
           }
         },
-                {
+        {
           name     = "syncthing.jellyfin-udp"
           port     = 22000
           protocol = "UDP"
@@ -255,10 +292,20 @@ resource "kubernetes_manifest" "nginx-gabric-gateway" {
               name = "motoki-playground-nyrox-dev-secret"
             }]
           }
+          allowedRoutes = {
+            namespaces = {
+              from = "Selector"
+              selector = {
+                matchLabels = {
+                  "kubernetes.io/metadata.name" = "motoki-playground"
+                }
+              }
+            }
+          }
         },
         {
-          name = "tekton-dashboard"
-          port = 443
+          name     = "tekton-dashboard"
+          port     = 443
           protocol = "HTTPS"
           hostname = "tekton.nyrox.dev"
           tls = {

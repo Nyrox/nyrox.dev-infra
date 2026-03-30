@@ -17,25 +17,25 @@ variable "network_id" {
 
 
 variable "network_ip" {
-    type = string
-    description = "Networked IP"
+  type        = string
+  description = "Networked IP"
 }
 
 variable "forgejo_bucket_access_key" {
-    type = string
-    description = "minio-compatible forgejo bucket access key"
-    sensitive = false
+  type        = string
+  description = "minio-compatible forgejo bucket access key"
+  sensitive   = false
 }
 
 variable "forgejo_bucket_secret_key" {
-    type = string
-    description = "minio-compatible forgejo bucket access key"
-    sensitive = true
+  type        = string
+  description = "minio-compatible forgejo bucket access key"
+  sensitive   = true
 }
 
 variable "forgejo_bucket_endpoint" {
-    type = string
-    description = "minion-compatible s3 endpoint"
+  type        = string
+  description = "minion-compatible s3 endpoint"
 }
 
 
@@ -49,44 +49,44 @@ resource "hcloud_volume" "forgejo-data" {
 }
 
 data "cloudinit_config" "forgejo-cloud-init" {
-    part {
-        content_type = "text/cloud-config"
-        filename = "cloud.conf"
+  part {
+    content_type = "text/cloud-config"
+    filename     = "cloud.conf"
 
-        content = yamlencode(
-            {
-                "write_files": [
-                    {
-                        "path": "/opt/forgejo-deployment/docker-compose.yml",
-                        "content": templatefile("${path.module}/docker-compose.yml", {
-                            MINIO_ACCESS_KEY = var.forgejo_bucket_access_key,
-                            MINIO_SECRET_ACCESS_KEY = var.forgejo_bucket_secret_key,
-                            MINIO_ENDPOINT = var.forgejo_bucket_endpoint
-                        })
-                    }
-                ],
-                "package_update": true,
-                "groups": ["docker"],
-                "packages": ["docker.io", "docker-compose"],
-                "users": [
-                    {
-                        "name": "forgejo",
-                        "ssh-authorized-keys": [
-                            "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCpBuzFghRM6bdzirdZzSH9cvC34Rl3Xv7m+kJbtJggyeAzHciXm9suL9ucWPU8zvjnE7mdRcPcN1ypvQute0n/Cmt1wCcOhJqM9nLMsxt0h6y5W4kpRMlSq45aNKg5xVz3EOUdZZoPt5u14BQzo21+ExzZgH3cELlIPvY/nYBBJoZV5tCn6VYs9jWniXb/q7S7cKUninKOZFfiv1j/D38+VsPj51D8WM9tFd5CTplBVUrBsiBwON5CQMvOkkfb7xUxgiDcrIGk5Xgg1VKO4pDqhh8N+E0q8MQJsi+dKd7YJSMKuMWy/AShZQRURVi5wcuVYd91bHHyzZHjRzP/b1CrxjoE94Il4s6yskfV/zN+3famBWld4wvaR/4ab2acWT9eE8DjOSZkYUsN2WaNrZCZDHrShXAewN96cdX3JDWAV2EI9fSrMA45S/13ofpDyR4No1Rzhlpf/I5UwfC8WVuDXXHKOBBwf5bM3cgT8EivU40miorfj8ZMsF/lMBcTm0s= marko@DESKTOP-Q8CO3NO",
-                            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL/8YwmkuOgTusH2v7azjCppIf7D1h9L43ok68BvQJ0J mark.junge@criipto.com",
-                            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCuumXfIEyIWnlfww3nJ72VmXg36eH2dCB7jBu4hcvH K8S Worker Node Key"
-                        ],
-                        "sudo": "ALL=(ALL) NOPASSWD:ALL",
-                        "shell": "/bin/bash",
-                    }
-                ],
-                "runcmd": [
-                    "usermod -aG docker forgejo",
-                    "chown forgejo /opt/forgejo-deployment"
-                ]
-            }
-        )
-    }
+    content = yamlencode(
+      {
+        "write_files" : [
+          {
+            "path" : "/opt/forgejo-deployment/docker-compose.yml",
+            "content" : templatefile("${path.module}/docker-compose.yml", {
+              MINIO_ACCESS_KEY        = var.forgejo_bucket_access_key,
+              MINIO_SECRET_ACCESS_KEY = var.forgejo_bucket_secret_key,
+              MINIO_ENDPOINT          = var.forgejo_bucket_endpoint
+            })
+          }
+        ],
+        "package_update" : true,
+        "groups" : ["docker"],
+        "packages" : ["docker.io", "docker-compose"],
+        "users" : [
+          {
+            "name" : "forgejo",
+            "ssh-authorized-keys" : [
+              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCpBuzFghRM6bdzirdZzSH9cvC34Rl3Xv7m+kJbtJggyeAzHciXm9suL9ucWPU8zvjnE7mdRcPcN1ypvQute0n/Cmt1wCcOhJqM9nLMsxt0h6y5W4kpRMlSq45aNKg5xVz3EOUdZZoPt5u14BQzo21+ExzZgH3cELlIPvY/nYBBJoZV5tCn6VYs9jWniXb/q7S7cKUninKOZFfiv1j/D38+VsPj51D8WM9tFd5CTplBVUrBsiBwON5CQMvOkkfb7xUxgiDcrIGk5Xgg1VKO4pDqhh8N+E0q8MQJsi+dKd7YJSMKuMWy/AShZQRURVi5wcuVYd91bHHyzZHjRzP/b1CrxjoE94Il4s6yskfV/zN+3famBWld4wvaR/4ab2acWT9eE8DjOSZkYUsN2WaNrZCZDHrShXAewN96cdX3JDWAV2EI9fSrMA45S/13ofpDyR4No1Rzhlpf/I5UwfC8WVuDXXHKOBBwf5bM3cgT8EivU40miorfj8ZMsF/lMBcTm0s= marko@DESKTOP-Q8CO3NO",
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL/8YwmkuOgTusH2v7azjCppIf7D1h9L43ok68BvQJ0J mark.junge@criipto.com",
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKCuumXfIEyIWnlfww3nJ72VmXg36eH2dCB7jBu4hcvH K8S Worker Node Key"
+            ],
+            "sudo" : "ALL=(ALL) NOPASSWD:ALL",
+            "shell" : "/bin/bash",
+          }
+        ],
+        "runcmd" : [
+          "usermod -aG docker forgejo",
+          "chown forgejo /opt/forgejo-deployment"
+        ]
+      }
+    )
+  }
 }
 
 
@@ -104,20 +104,20 @@ resource "hcloud_server" "forgejo-master" {
 
   network {
     network_id = var.network_id
-    ip = var.network_ip
+    ip         = var.network_ip
   }
 
   user_data = data.cloudinit_config.forgejo-cloud-init.rendered
 }
 
 resource "hcloud_volume_attachment" "forgejo-data-attachment" {
-    volume_id = hcloud_volume.forgejo-data.id
-    server_id = hcloud_server.forgejo-master.id
+  volume_id = hcloud_volume.forgejo-data.id
+  server_id = hcloud_server.forgejo-master.id
 
-    automount = true
+  automount = true
 }
 
-resource "terraform_data" "symlink-forgejo-data-volume" {
+resource "terraform_data" "pangolin-remote-setup" {
   triggers_replace = hcloud_server.forgejo-master.id
 
   provisioner "remote-exec" {
@@ -142,18 +142,18 @@ resource "terraform_data" "symlink-forgejo-data-volume" {
 /// -- DNS
 
 data "hcloud_zone" "by_name" {
-    name = "nyrox.dev"
+  name = "nyrox.dev"
 }
 
 resource "hcloud_zone_rrset" "git-nyrox-dev-A-records" {
-    zone = data.hcloud_zone.by_name.id
-    type = "A"
-    name = "git"
-    ttl = 3600
+  zone = data.hcloud_zone.by_name.id
+  type = "A"
+  name = "git"
+  ttl  = 3600
 
-    records = [ {
-      value = hcloud_server.forgejo-master.ipv4_address, comment = "Git master address"
-    } ]
+  records = [{
+    value = hcloud_server.forgejo-master.ipv4_address, comment = "Git master address"
+  }]
 }
 
 

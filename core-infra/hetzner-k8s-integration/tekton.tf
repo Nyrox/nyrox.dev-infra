@@ -3,50 +3,50 @@
 
 
 data "http" "tekton-operator-crds" {
-    url = "https://infra.tekton.dev/tekton-releases/operator/latest/release.yaml"
+  url = "https://infra.tekton.dev/tekton-releases/operator/latest/release.yaml"
 }
 
 data "kubectl_file_documents" "tekton-operator-crds" {
-    content = data.http.tekton-operator-crds.response_body
+  content = data.http.tekton-operator-crds.response_body
 }
 
 resource "kubectl_manifest" "tekton-operator-crds" {
-    for_each = data.kubectl_file_documents.tekton-operator-crds.manifests
-    yaml_body = each.value
+  for_each  = data.kubectl_file_documents.tekton-operator-crds.manifests
+  yaml_body = each.value
 }
 
 
 data "http" "tekton-operator-profile-config" {
-    url = "https://raw.githubusercontent.com/tektoncd/operator/main/config/crs/kubernetes/config/all/operator_v1alpha1_config_cr.yaml"
+  url = "https://raw.githubusercontent.com/tektoncd/operator/main/config/crs/kubernetes/config/all/operator_v1alpha1_config_cr.yaml"
 }
 
 resource "kubectl_manifest" "tekton-operator-profile-config" {
-    depends_on = [ kubectl_manifest.tekton-operator-crds ]
-    yaml_body = data.http.tekton-operator-profile-config.response_body
+  depends_on = [kubectl_manifest.tekton-operator-crds]
+  yaml_body  = data.http.tekton-operator-profile-config.response_body
 }
 
 // -- OAUTH Proxy
 
 variable "tekton_dashboard_oauth_client_id" {
-    sensitive = true
-    type = string
+  sensitive = true
+  type      = string
 }
 
 variable "tekton_dashboard_oauth_client_secret" {
-    sensitive = true
-    type = string
+  sensitive = true
+  type      = string
 }
 
 resource "helm_release" "oauth2-proxy-tekton-dashboard" {
-    name = "oauth2-proxy-tekton-dashboard"
-    namespace = "tekton-aux"
-    create_namespace = true
-    repository = "https://oauth2-proxy.github.io/manifests"
-    chart = "oauth2-proxy"
-    wait = false
+  name             = "oauth2-proxy-tekton-dashboard"
+  namespace        = "tekton-aux"
+  create_namespace = true
+  repository       = "https://oauth2-proxy.github.io/manifests"
+  chart            = "oauth2-proxy"
+  wait             = false
 
-    values = [
-<<EOT
+  values = [
+    <<EOT
 config:
     clientID: ${var.tekton_dashboard_oauth_client_id}
     clientSecret: ${var.tekton_dashboard_oauth_client_secret}
@@ -73,5 +73,5 @@ gatewayApi:
     hostnames:
         - tekton.nyrox.dev
 EOT
-    ]
+  ]
 }

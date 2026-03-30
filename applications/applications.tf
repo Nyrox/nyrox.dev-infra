@@ -63,13 +63,46 @@ data "hcloud_network" "by_name" {
 
 /// -- MODULES
 
+variable "pangolin_acme_email" {
+  type        = string
+  description = "Email address for pangolin Let's Encrypt ACME registration"
+}
+
+variable "pangolin_server_secret" {
+  type        = string
+  description = "Pangolin server secret (min 32 chars)"
+  sensitive   = true
+}
+
+variable "newt_endpoint" {
+  type        = string
+  description = "Pangolin endpoint URL for the Newt relay ingress"
+}
+
+variable "newt_id" {
+  type        = string
+  description = "Newt client ID from the Pangolin dashboard"
+}
+
+variable "newt_secret" {
+  type        = string
+  description = "Newt client secret from the Pangolin dashboard"
+  sensitive   = true
+}
+
 module "pangolin" {
   source = "./pangolin"
 
   depends_on = []
 
-  network_id = data.hcloud_network.by_name.id
-  network_ip = "10.0.1.3"
+  network_id    = data.hcloud_network.by_name.id
+  network_ip    = "10.0.1.3"
+  acme_email    = var.pangolin_acme_email
+  server_secret = var.pangolin_server_secret
+
+  newt_endpoint = var.newt_endpoint
+  newt_id       = var.newt_id
+  newt_secret   = var.newt_secret
 }
 
 
@@ -94,5 +127,10 @@ module "jellyfin" {
 
 module "buildkit" {
   source     = "./buildkit"
+  depends_on = []
+}
+
+module "motoki-playground" {
+  source     = "./motoki-playground"
   depends_on = []
 }
