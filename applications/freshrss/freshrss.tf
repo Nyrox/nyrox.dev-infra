@@ -4,7 +4,30 @@ terraform {
     kubernetes = {
       source = "hashicorp/kubernetes"
     }
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "1.56.0"
+    }
   }
+}
+
+data "hcloud_zone" "nyrox-dev" {
+  name = "nyrox.dev"
+}
+
+data "hcloud_load_balancer" "main-gateway" {
+  name = "main-gateway-lb"
+}
+
+resource "hcloud_zone_rrset" "rss-nyrox-dev-A" {
+  zone = data.hcloud_zone.nyrox-dev.id
+  type = "A"
+  name = "rss"
+  ttl  = 3600
+
+  records = [{
+    value = data.hcloud_load_balancer.main-gateway.ipv4, comment = "K8s main gateway LB"
+  }]
 }
 
 variable "admin_password" {
