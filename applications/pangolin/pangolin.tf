@@ -174,18 +174,18 @@ resource "hcloud_firewall" "pangolin" {
   }
 
   rule {
-    direction  = "in"
-    protocol   = "udp"
-    port       = "51820"
-    source_ips = ["0.0.0.0/0", "::/0"]
+    direction   = "in"
+    protocol    = "udp"
+    port        = "51820"
+    source_ips  = ["0.0.0.0/0", "::/0"]
     description = "WireGuard (Gerbil)"
   }
 
   rule {
-    direction  = "in"
-    protocol   = "udp"
-    port       = "21820"
-    source_ips = ["0.0.0.0/0", "::/0"]
+    direction   = "in"
+    protocol    = "udp"
+    port        = "21820"
+    source_ips  = ["0.0.0.0/0", "::/0"]
     description = "WireGuard alt (Gerbil)"
   }
 }

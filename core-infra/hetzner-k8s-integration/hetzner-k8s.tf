@@ -161,15 +161,15 @@ resource "kubernetes_manifest" "cert-manager-cluster-issuer" {
 // --- NGINX FABRIC
 
 resource "terraform_data" "install-k8s-gateway-crd" {
+
   provisioner "local-exec" {
     command = "kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/standard-install.yaml"
   }
 }
 
 resource "terraform_data" "install-nginx-fabric-gateway-crd" {
-  depends_on = [terraform_data.install-k8s-gateway-crd]
   provisioner "local-exec" {
-    command = "kubectl kustomize \"https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.2.1\" | kubectl apply -f -"
+    command = "kubectl kustomize \"https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.5.0\" | kubectl apply -f -"
   }
 }
 
@@ -179,6 +179,7 @@ resource "helm_release" "nginx-gateway-fabric" {
   name       = "ngf"
   repository = "oci://ghcr.io/nginx/charts"
   chart      = "nginx-gateway-fabric"
+  version    = "2.5.0"
 
   namespace        = "nginx-gateway"
   create_namespace = true
@@ -298,6 +299,29 @@ resource "kubernetes_manifest" "nginx-gabric-gateway" {
               selector = {
                 matchLabels = {
                   "kubernetes.io/metadata.name" = "motoki-playground"
+                }
+              }
+            }
+          }
+        },
+        {
+          name     = "rss"
+          port     = 443
+          protocol = "HTTPS"
+          hostname = "rss.nyrox.dev"
+          tls = {
+            mode = "Terminate"
+            certificateRefs = [{
+              kind = "Secret"
+              name = "rss-nyrox-dev-secret"
+            }]
+          }
+          allowedRoutes = {
+            namespaces = {
+              from = "Selector"
+              selector = {
+                matchLabels = {
+                  "kubernetes.io/metadata.name" = "freshrss"
                 }
               }
             }

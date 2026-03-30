@@ -134,3 +134,27 @@ module "motoki-playground" {
   source     = "./motoki-playground"
   depends_on = []
 }
+
+variable "freshrss_admin_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "freshrss_api_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "freshrss_admin_email" {
+  type    = string
+  default = "admin@nyrox.dev"
+}
+
+module "freshrss" {
+  source     = "./freshrss"
+  depends_on = []
+
+  admin_password = var.freshrss_admin_password
+  api_password   = var.freshrss_api_password
+  admin_email    = var.freshrss_admin_email
+}
