@@ -143,6 +143,58 @@ resource "hcloud_server" "pangolin-master" {
   user_data = data.cloudinit_config.pangolin-cloud-init.rendered
 }
 
+resource "hcloud_firewall" "pangolin" {
+  name = "pangolin"
+
+  rule {
+    direction  = "in"
+    protocol   = "icmp"
+    source_ips = ["0.0.0.0/0", "::/0"]
+  }
+
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    port       = "22"
+    source_ips = ["0.0.0.0/0", "::/0"]
+  }
+
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    port       = "80"
+    source_ips = ["0.0.0.0/0", "::/0"]
+  }
+
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    port       = "443"
+    source_ips = ["0.0.0.0/0", "::/0"]
+  }
+
+  rule {
+    direction  = "in"
+    protocol   = "udp"
+    port       = "51820"
+    source_ips = ["0.0.0.0/0", "::/0"]
+    description = "WireGuard (Gerbil)"
+  }
+
+  rule {
+    direction  = "in"
+    protocol   = "udp"
+    port       = "21820"
+    source_ips = ["0.0.0.0/0", "::/0"]
+    description = "WireGuard alt (Gerbil)"
+  }
+}
+
+resource "hcloud_firewall_attachment" "pangolin" {
+  firewall_id = hcloud_firewall.pangolin.id
+  server_ids  = [hcloud_server.pangolin-master.id]
+}
+
 resource "hcloud_volume_attachment" "pangolin-data-attachment" {
   volume_id = hcloud_volume.pangolin-data.id
   server_id = hcloud_server.pangolin-master.id
