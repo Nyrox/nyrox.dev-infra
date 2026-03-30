@@ -36,18 +36,34 @@ variable "forgejo_registry_token" {
 
 // --- RESOURCES
 
-resource "kubernetes_namespace_v1" "motoki-playground" {
+// Reflector syncs the forgejo-registry secret into every namespace automatically,
+// so individual app modules never need to declare it.
+resource "helm_release" "reflector" {
+  name       = "reflector"
+  repository = "https://emberstack.github.io/helm-charts"
+  chart      = "reflector"
+  namespace  = "kube-system"
+}
+
+resource "kubernetes_namespace_v1" "forgejo-auth" {
   metadata {
-    name = "motoki-playground"
+    name = "forgejo-auth"
   }
 }
 
 resource "kubernetes_secret_v1" "forgejo-registry" {
-  depends_on = [kubernetes_namespace_v1.motoki-playground]
+  depends_on = [
+    kubernetes_namespace_v1.forgejo-auth,
+    helm_release.reflector,
+  ]
 
   metadata {
     name      = "forgejo-registry"
-    namespace = "motoki-playground"
+    namespace = "forgejo-auth"
+    annotations = {
+      "reflector.v1.k8s.emberstack.com/reflection-allowed"      = "true"
+      "reflector.v1.k8s.emberstack.com/reflection-auto-enabled" = "true"
+    }
   }
 
   type = "kubernetes.io/dockerconfigjson"

@@ -6,7 +6,14 @@ terraform {
   }
 }
 
+resource "kubernetes_namespace_v1" "motoki-playground" {
+  metadata {
+    name = "motoki-playground"
+  }
+}
+
 resource "kubernetes_deployment_v1" "motoki-playground" {
+  depends_on = [kubernetes_namespace_v1.motoki-playground]
   metadata {
     name      = "motoki-playground"
     namespace = "motoki-playground"
@@ -49,6 +56,8 @@ resource "kubernetes_deployment_v1" "motoki-playground" {
 }
 
 resource "kubernetes_service_v1" "motoki-playground" {
+  depends_on = [kubernetes_namespace_v1.motoki-playground]
+
   metadata {
     name      = "motoki-playground"
     namespace = "motoki-playground"
@@ -67,6 +76,8 @@ resource "kubernetes_service_v1" "motoki-playground" {
 }
 
 resource "kubernetes_manifest" "motoki-playground-http-route" {
+  depends_on = [kubernetes_namespace_v1.motoki-playground]
+
   manifest = {
     apiVersion = "gateway.networking.k8s.io/v1"
     kind       = "HTTPRoute"
