@@ -2,15 +2,8 @@
 terraform {
   required_providers {
     hcloud = {
-      source = "hetznercloud/hcloud"
-      # Here we use version 1.56.0, this may change in the future
+      source  = "hetznercloud/hcloud"
       version = "1.56.0"
-    }
-    kubernetes = {
-      source = "hashicorp/kubernetes"
-    }
-    helm = {
-      source = "hashicorp/helm"
     }
   }
 }
@@ -39,22 +32,6 @@ variable "acme_email" {
 variable "server_secret" {
   type        = string
   description = "Pangolin server secret (min 32 chars) for encrypting sensitive data"
-  sensitive   = true
-}
-
-variable "newt_endpoint" {
-  type        = string
-  description = "Pangolin endpoint URL for the Newt relay ingress (e.g. https://relay.nyrox.dev)"
-}
-
-variable "newt_id" {
-  type        = string
-  description = "Newt client ID from the Pangolin dashboard"
-}
-
-variable "newt_secret" {
-  type        = string
-  description = "Newt client secret from the Pangolin dashboard"
   sensitive   = true
 }
 
@@ -122,7 +99,6 @@ data "cloudinit_config" "pangolin-cloud-init" {
     )
   }
 }
-
 
 resource "hcloud_server" "pangolin-master" {
   name        = "pangolin-master"
@@ -215,7 +191,6 @@ resource "terraform_data" "pangolin-remote-setup" {
       "sudo ln -s /mnt/HC_Volume_${hcloud_volume_attachment.pangolin-data-attachment.volume_id} /opt/pangolin-data",
       "sudo mkdir -p /opt/pangolin-data/db /opt/pangolin-data/gerbil",
       "sudo chown -R pangolin /opt/pangolin-data",
-      // timing: ensure cloud-init packages are installed before continuing
       "sudo apt install -y docker-compose-v2",
       "cd /opt/pangolin && docker compose up -d"
     ]
@@ -229,13 +204,12 @@ resource "terraform_data" "pangolin-remote-setup" {
   }
 }
 
-
 data "hcloud_zone" "by_name" {
   name = "nyrox.dev"
 }
 
 resource "hcloud_zone_rrset" "relay-nyrox-dev-A-records" {
-  zone = data.hcloud_zone.by_name.id
+  zone = data.hcloud_zone.by_name.name
   type = "A"
   name = "relay"
   ttl  = 3600
@@ -246,7 +220,7 @@ resource "hcloud_zone_rrset" "relay-nyrox-dev-A-records" {
 }
 
 resource "hcloud_zone_rrset" "wildcard-relay-nyrox-dev-A-records" {
-  zone = data.hcloud_zone.by_name.id
+  zone = data.hcloud_zone.by_name.name
   type = "A"
   name = "*.relay"
   ttl  = 3600
@@ -254,51 +228,4 @@ resource "hcloud_zone_rrset" "wildcard-relay-nyrox-dev-A-records" {
   records = [{
     value = hcloud_server.pangolin-master.ipv4_address, comment = "Relay master ingest"
   }]
-}
-
-resource "kubernetes_namespace_v1" "newt" {
-  metadata {
-    name = "newt"
-  }
-}
-
-resource "kubernetes_secret_v1" "newt-cred" {
-  depends_on = [kubernetes_namespace_v1.newt]
-
-  metadata {
-    name      = "newt-cred"
-    namespace = "newt"
-  }
-
-  data = {
-    PANGOLIN_ENDPOINT = var.newt_endpoint
-    NEWT_ID           = var.newt_id
-    NEWT_SECRET       = var.newt_secret
-  }
-}
-
-resource "helm_release" "k8s-main-relay-ingress" {
-  depends_on = [kubernetes_secret_v1.newt-cred]
-
-  name       = "k8s-main-relay-ingress"
-  repository = "https://charts.fossorial.io"
-  chart      = "newt"
-  namespace  = "newt"
-
-  values = [
-    yamlencode({
-      newtInstances = [{
-        name    = "main"
-        enabled = true
-        auth = {
-          existingSecretName = "newt-cred"
-          keys = {
-            endpointKey = "PANGOLIN_ENDPOINT"
-            idKey       = "NEWT_ID"
-            secretKey   = "NEWT_SECRET"
-          }
-        }
-      }]
-    })
-  ]
 }

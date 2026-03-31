@@ -66,11 +66,6 @@ data "hcloud_network" "by_name" {
 
 /// -- MODULES
 
-module "hetzner-vms" {
-  source     = "./hetzner-vms"
-  network_id = data.hcloud_network.by_name.id
-}
-
 module "hetzner-k8s" {
   source     = "./hetzner-k8s-integration"
   depends_on = []
