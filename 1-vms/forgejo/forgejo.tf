@@ -117,7 +117,7 @@ resource "hcloud_volume_attachment" "forgejo-data-attachment" {
   automount = true
 }
 
-resource "terraform_data" "pangolin-remote-setup" {
+resource "terraform_data" "forgejo-remote-setup" {
   triggers_replace = hcloud_server.forgejo-master.id
 
   provisioner "remote-exec" {
