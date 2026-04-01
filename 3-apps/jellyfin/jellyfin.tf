@@ -152,7 +152,7 @@ resource "kubernetes_deployment_v1" "jellyfin-deployment" {
         /// Jellyfin container
         container {
           name              = "jellyfin"
-          image             = "docker.io/jellyfin/jellyfin"
+          image             = "docker.io/jellyfin/jellyfin:10.11.7"
           image_pull_policy = "IfNotPresent"
 
           port {
