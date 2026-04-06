@@ -172,14 +172,37 @@ resource "kubernetes_manifest" "main-gateway" {
               }
             }
           }
+        },
+        {
+          name     = "lock-in-reader"
+          port     = 443
+          protocol = "HTTPS"
+          hostname = "lock-in-reader.nyrox.dev"
+          tls = {
+            mode = "Terminate"
+            certificateRefs = [{
+              kind = "Secret"
+              name = "lock-in-reader-nyrox-dev-secret"
+            }]
+          }
+          allowedRoutes = {
+            namespaces = {
+              from = "Selector"
+              selector = {
+                matchLabels = {
+                  "kubernetes.io/metadata.name" = "lock-in-reader"
+                }
+              }
+            }
+          }
         }
       ]
 
       infrastructure = {
         annotations = {
-          "load-balancer.hetzner.cloud/name"             = "main-gateway-lb"
-          "load-balancer.hetzner.cloud/location"         = "fsn1"
-          "load-balancer.hetzner.cloud/use-private-ip"   = true
+          "load-balancer.hetzner.cloud/name"               = "main-gateway-lb"
+          "load-balancer.hetzner.cloud/location"           = "fsn1"
+          "load-balancer.hetzner.cloud/use-private-ip"     = true
           "load-balancer.hetzner.cloud/uses-proxyprotocol" = false
         }
       }

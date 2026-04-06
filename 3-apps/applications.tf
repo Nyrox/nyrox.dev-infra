@@ -107,3 +107,8 @@ module "freshrss" {
   api_password   = var.freshrss_api_password
   admin_email    = var.freshrss_admin_email
 }
+
+module "lock-in-reader" {
+  source     = "./lock-in-reader"
+  depends_on = []
+}
